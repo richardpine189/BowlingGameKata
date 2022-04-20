@@ -15,8 +15,42 @@ public class BowlingGameShould
     }
 
     [Test]
-    public void Test()
+    public void Bowling_GivenANewMatch_HaveOnlyTenTurns()
     {
-        Assert.IsTrue(false);
+        // Given
+        int expectedTurns = 10;
+
+        Assert.AreEqual(expectedTurns, _bowlingGame.TotalAmountTurnsConst);
     }
+
+    [Test]
+    public void Bowling_GivenANewMatch_CheckTurnCount()
+    {
+        int expectedTurns = 10;
+
+        Assert.AreEqual(expectedTurns, _bowlingGame.TotalAmountTurns);
+    }
+}
+
+internal class BowlingGame
+{
+    private const int TOTAL_AMOUNT_TURNS = 10;
+
+    private int[] turns = new int[TOTAL_AMOUNT_TURNS];
+
+    public int TotalAmountTurnsConst {
+        get
+        {
+            return TOTAL_AMOUNT_TURNS;
+        }
+    }
+
+    public int TotalAmountTurns
+    {
+        get
+        {
+            return this.turns.Length;
+        }
+    }
+
 }
