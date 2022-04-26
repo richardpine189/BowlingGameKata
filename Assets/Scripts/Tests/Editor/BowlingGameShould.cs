@@ -113,26 +113,49 @@ public class BowlingGameShould
     [Test]
     public void GivenTwoThrows_SumTotalOfPinesDown()
     {
+        _bowlingGame.AddThrow(3);
+        _bowlingGame.AddThrow(5);
 
+        Assert.AreEqual(8, _bowlingGame.GetTurnScore(0));
     }
 
-    /* Si en un turno el jugador tira los 10 bolos (spare), la puntuación es 10 más el numero de bolos tirados
-     * en la siguiente tirada (del siguiente turno).
-     */
-    [Test]
-    public void GivenATurn_WithAllPinesDownBetweenTwoThrows_SumTheNextResultThrow()
+    // Si en un turno hay un spare se suma a la puntuación del turno el próximo tiro.
+    [TestCase(null, ExpectedResult = null)]
+    [TestCase(6, ExpectedResult = 16)]
+    public int? GivenATurn_WithAllPinesDownBetweenTwoThrows_SumTheNextResultThrow(int? thirdThrow)
     {
+        _bowlingGame.AddThrow(7);
+        _bowlingGame.AddThrow(3);
 
+        if (thirdThrow != null)
+        {
+            _bowlingGame.AddThrow(thirdThrow.Value);
+        }
+
+        return _bowlingGame.GetTurnScore(0);
     }
 
-    /* Si en la primera tirada del turno tira los 10 bolos (strike) el turno acaba y la puntuación es 10
-     * mas las dos siguientes tiradas.
-     */
-    [Test]
-    public void GivenATurn_WhereThePlayerMakeAStrike_SumTheNextTwoResultThrows()
+    // Si en un turno hay un strike se suma la puntuación de los próximos dos tiros.
+    [TestCase(3, 5, ExpectedResult = 18)]
+    [TestCase(null, 7, ExpectedResult = null)]
+    public int? GivenATurn_WhereThePlayerMakeAStrike_SumTheNextTwoResultThrows(int? thirdThrow, int? fourthThrow)
     {
+        _bowlingGame.AddThrow(10);
 
+        if (thirdThrow != null)
+        {
+            _bowlingGame.AddThrow(thirdThrow.Value);
+        }
+
+        if (fourthThrow != null)
+        {
+            _bowlingGame.AddThrow(fourthThrow.Value);
+        }
+
+        return _bowlingGame.GetTurnScore(0);
     }
+
+    // Si hay un strike 
 
     /* Si el jugador logra un spare o un strike en el último turno, obtiene una o dos tiradas respectivamente
      * de bonificación. Estas tiradas cuentan como parte del mismo turno (El decimo).
@@ -231,5 +254,51 @@ internal class BowlingGame
         }
 
         return false;
+    }
+
+    // Calcularlo cada vez que se necesita mostrar me parece poco performante.
+    // Turno debería ser una clase en sí misma con la cantidad de bolos de cada tiro y un puntaje?
+    // O debería tener un array paralelo con los puntajes de cada turno?
+    public int? GetTurnScore(int turnIndex)
+    {
+        if(TurnIsStrike(turnIndex))
+        {
+            if(turns[turnIndex + 1] != null)
+            {
+                if(turns[turnIndex + 1][0] == 10)
+                {
+                    if (turns[turnIndex + 2] != null)
+                    {
+                        return 10 + turns[turnIndex + 1][0] + turns[turnIndex + 2][0];
+                    }
+
+                    return null;
+                }
+
+                if(turns[turnIndex + 1][1] != null)
+                {
+                    return 10 + turns[turnIndex + 1][0] + turns[turnIndex + 1][1];
+                }
+            }
+
+            return null;
+        }
+        
+        if(TurnIsSpare(turnIndex))
+        {
+            if(turns[turnIndex + 1] != null && turns[turnIndex + 1][0] != null)
+            {
+                return turns[turnIndex].Sum() + turns[turnIndex + 1][0];
+            }
+
+            return null;
+        }
+        
+        if(turns[turnIndex].Any(x => !x.HasValue))
+        {
+            return null;
+        }
+
+        return turns[turnIndex].Sum();
     }
 }
